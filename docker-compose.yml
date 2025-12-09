@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Наше приложение
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tempmail-app
+    environment:
+      - HTTP_PORT=8080
+      - SMTP_PORT=2525
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=tempmail
+      - DB_USER=postgres
+      - DB_PASSWORD=limpopo
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAIL_DOMAIN=tempmail.dev
+      - DEFAULT_TTL=1h
+      - MAX_TTL=24h
+      - CLEANUP_INTERVAL=5m
+    ports:
+      - "8080:8080"   # HTTP API
+      - "2525:2525"   # SMTP
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: tempmail-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: tempmail
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/001_init.up.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: tempmail-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

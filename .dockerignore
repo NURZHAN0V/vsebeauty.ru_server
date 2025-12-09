@@ -1,0 +1,24 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Локальные файлы
+.env
+*.log
+tmp/
+
+# Документация
+docs/
+README.md
+
+# Тесты
+*_test.go
+
+# Собранные файлы
+tempmail
+*.exe
