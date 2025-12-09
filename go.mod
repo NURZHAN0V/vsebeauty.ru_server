@@ -1,6 +1,6 @@
 module tempmail
 
-go 1.25.2
+go 1.23
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

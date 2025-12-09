@@ -144,8 +144,6 @@ tempmail
 
 **Обновляем `docker-compose.yml` для полного стека:**
 ```yaml
-version: '3.8'
-
 services:
   # Наше приложение
   app:
