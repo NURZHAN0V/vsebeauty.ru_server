@@ -55,3 +55,4 @@ func (s *Stats) GetStats() Stats {
 		LastCleanup:       s.LastCleanup,
 	}
 }
+
