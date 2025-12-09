@@ -26,7 +26,7 @@ Dockerfile — это инструкция для создания Docker-обр
 ```dockerfile
 # Этап 1: Сборка приложения
 # Используем официальный образ Go для сборки
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app
@@ -77,7 +77,7 @@ CMD ["./tempmail"]
 
 **Разбор:**
 
-- `FROM golang:1.21-alpine AS builder` — используем образ Go для сборки. `AS builder` даёт имя этому этапу.
+- `FROM golang:1.23-alpine AS builder` — используем образ Go для сборки. `AS builder` даёт имя этому этапу.
 
 - `WORKDIR /app` — устанавливаем рабочую директорию. Все последующие команды выполняются в ней.
 
