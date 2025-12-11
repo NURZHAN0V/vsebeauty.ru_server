@@ -7,20 +7,22 @@ services:
     container_name: tempmail-app
     cap_add:
       - NET_BIND_SERVICE  # Разрешает привязку к привилегированным портам (< 1024)
+    env_file:
+      - .env  # Загружает переменные из .env файла
     environment:
-      - HTTP_PORT=8080
-      - SMTP_PORT=25
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=tempmail
-      - DB_USER=postgres
-      - DB_PASSWORD=limpopo
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - MAIL_DOMAIN=vsebeauty.ru
-      - DEFAULT_TTL=1h
-      - MAX_TTL=24h
-      - CLEANUP_INTERVAL=5m
+      - HTTP_PORT=${HTTP_PORT:-8080}
+      - SMTP_PORT=${SMTP_PORT:-25}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-tempmail}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MAIL_DOMAIN=${MAIL_DOMAIN:-vsebeauty.ru}
+      - DEFAULT_TTL=${DEFAULT_TTL:-1h}
+      - MAX_TTL=${MAX_TTL:-24h}
+      - CLEANUP_INTERVAL=${CLEANUP_INTERVAL:-5m}
     ports:
       - "8080:8080"   # HTTP API
       - "25:25"       # SMTP
@@ -35,10 +37,12 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: tempmail-postgres
+    env_file:
+      - .env  # Загружает переменные из .env файла
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: tempmail
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: ${DB_NAME:-tempmail}
     ports:
       - "5435:5432"
     volumes:

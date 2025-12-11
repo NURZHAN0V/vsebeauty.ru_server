@@ -26,14 +26,51 @@ cd tempserver/server
 
 ### 3. Настройка конфигурации
 
-Отредактируйте `docker-compose.yml`:
+**Рекомендуемый способ - через .env файл:**
 
-```yaml
-environment:
-  - DB_PASSWORD=ваш-надежный-пароль  # Измените пароль БД!
-  - MAIL_DOMAIN=vsebeauty.ru          # Ваш домен
-  - SMTP_PORT=25                      # Стандартный SMTP порт
+```bash
+# Создайте .env файл
+nano .env
 ```
+
+Добавьте следующие переменные в `.env`:
+
+```bash
+# Обязательные
+DB_PASSWORD=ваш-надежный-пароль  # Измените пароль БД!
+MAIL_DOMAIN=vsebeauty.ru          # Ваш домен
+SMTP_PORT=25                      # Стандартный SMTP порт
+
+# Сервер
+HTTP_PORT=8080
+
+# База данных
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=tempmail
+DB_USER=postgres
+
+# Redis
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+# Время жизни ящиков
+DEFAULT_TTL=1h
+MAX_TTL=24h
+
+# Лимиты
+MAX_MESSAGE_SIZE=10485760
+MAX_ATTACHMENT_SIZE=5242880
+MAX_MESSAGES_PER_MAILBOX=100
+CLEANUP_INTERVAL=5m
+```
+
+**Важно:** 
+- Файл `.env` не должен попадать в git (уже в .gitignore)
+- Docker Compose автоматически читает переменные из `.env` через `env_file: - .env`
+- Переменные из `.env` используются в `docker-compose.yml` через синтаксис `${VARIABLE:-default}`
+- Если `.env` файл отсутствует, используются значения по умолчанию из `docker-compose.yml`
+- **Обязательно измените `DB_PASSWORD`** на надежный пароль перед запуском в продакшене!
 
 ### 4. Настройка DNS
 
@@ -43,7 +80,44 @@ environment:
 - **A запись**: `mail.vsebeauty.ru` → IP адрес вашего сервера
 - **SPF запись**: `v=spf1 ip4:ВАШ-IP ~all`
 
-### 5. Настройка файрвола
+### 5. Настройка Nginx (опционально, но рекомендуется)
+
+Nginx используется как reverse proxy для API, чтобы не открывать порт 8080 напрямую.
+
+**Установка Nginx:**
+```bash
+apt install nginx -y
+```
+
+**Настройка конфигурации:**
+```bash
+# Скопируйте конфигурацию
+cp nginx/nginx-simple.conf /etc/nginx/sites-available/tempmail
+ln -s /etc/nginx/sites-available/tempmail /etc/nginx/sites-enabled/
+
+# Или для HTTPS используйте nginx.conf (после настройки SSL)
+# cp nginx/nginx.conf /etc/nginx/sites-available/tempmail
+
+# Проверьте конфигурацию
+nginx -t
+
+# Перезапустите Nginx
+systemctl restart nginx
+```
+
+**Настройка SSL (Let's Encrypt):**
+```bash
+# Установите Certbot
+apt install certbot python3-certbot-nginx -y
+
+# Получите сертификат
+certbot --nginx -d vsebeauty.ru -d www.vsebeauty.ru
+
+# Автоматическое обновление
+certbot renew --dry-run
+```
+
+### 6. Настройка файрвола
 
 ```bash
 # Откройте необходимые порты
@@ -51,13 +125,13 @@ ufw allow 22/tcp    # SSH
 ufw allow 80/tcp    # HTTP
 ufw allow 443/tcp   # HTTPS
 ufw allow 25/tcp    # SMTP
-ufw allow 8080/tcp  # API (или через reverse proxy)
+# Порт 8080 можно закрыть, если используете Nginx
 
 # Включите файрвол
 ufw enable
 ```
 
-### 6. Запуск
+### 7. Запуск
 
 ```bash
 # Запустите все сервисы
@@ -70,7 +144,7 @@ docker compose ps
 docker logs tempmail-app
 ```
 
-### 7. Проверка работы
+### 8. Проверка работы
 
 ```bash
 # Проверьте SMTP сервер
@@ -80,7 +154,9 @@ docker logs tempmail-app | grep -i smtp
 # Проверьте порт
 netstat -tuln | grep ":25 "
 
-# Проверьте API
+# Проверьте API (через Nginx, если настроен)
+curl http://localhost/api/v1/health
+# или напрямую
 curl http://localhost:8080/health
 ```
 
