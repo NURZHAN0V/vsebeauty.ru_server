@@ -89,14 +89,19 @@ Nginx используется как reverse proxy для API, чтобы не 
 apt install nginx -y
 ```
 
-**Настройка конфигурации:**
+**Настройка конфигурации (HTTP):**
 ```bash
-# Скопируйте конфигурацию
-cp nginx/nginx-simple.conf /etc/nginx/sites-available/tempmail
+# Скопируйте базовую конфигурацию
+cp nginx/tempmail.conf /etc/nginx/sites-available/tempmail
+
+# Отредактируйте домен (если нужно)
+nano /etc/nginx/sites-available/tempmail
+
+# Активируйте конфигурацию
 ln -s /etc/nginx/sites-available/tempmail /etc/nginx/sites-enabled/
 
-# Или для HTTPS используйте nginx.conf (после настройки SSL)
-# cp nginx/nginx.conf /etc/nginx/sites-available/tempmail
+# Удалите дефолтную конфигурацию (если есть)
+rm /etc/nginx/sites-enabled/default
 
 # Проверьте конфигурацию
 nginx -t
@@ -113,6 +118,13 @@ apt install certbot python3-certbot-nginx -y
 # Получите сертификат
 certbot --nginx -d vsebeauty.ru -d www.vsebeauty.ru
 
+# После получения сертификата используйте SSL конфигурацию:
+cp nginx/tempmail-ssl.conf /etc/nginx/sites-available/tempmail
+nano /etc/nginx/sites-available/tempmail  # Проверьте пути к сертификатам
+
+# Перезапустите Nginx
+nginx -t && systemctl restart nginx
+
 # Автоматическое обновление
 certbot renew --dry-run
 ```
@@ -125,7 +137,7 @@ ufw allow 22/tcp    # SSH
 ufw allow 80/tcp    # HTTP
 ufw allow 443/tcp   # HTTPS
 ufw allow 25/tcp    # SMTP
-# Порт 8080 можно закрыть, если используете Nginx
+ufw allow 8080/tcp  # API (или через reverse proxy)
 
 # Включите файрвол
 ufw enable
