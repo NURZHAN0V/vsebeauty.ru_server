@@ -17,7 +17,7 @@ services:
       - DB_PASSWORD=limpopo
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MAIL_DOMAIN=tempmail.dev
+      - MAIL_DOMAIN=vsebeauty.ru
       - DEFAULT_TTL=1h
       - MAX_TTL=24h
       - CLEANUP_INTERVAL=5m
