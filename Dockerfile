@@ -46,7 +46,7 @@ COPY migrations ./migrations
 USER appuser
 
 # Открываем порты
-EXPOSE 8080 2525
+EXPOSE 8080 25
 
 # Команда запуска
 CMD ["./tempmail"]
